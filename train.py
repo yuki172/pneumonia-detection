@@ -14,7 +14,7 @@ from torcheval.metrics import (
     MulticlassRecall,
     MulticlassF1Score,
 )
-import mlflow
+from utils import get_run_name
 
 parser = argparse.ArgumentParser()
 
@@ -39,6 +39,13 @@ parser.add_argument(
     dest="learning_rate",
     default=LEARNING_RATE,
     help="learning rate",
+)
+parser.add_argument(
+    "--optimizer_name",
+    type=str,
+    dest="optimizer_name",
+    default="Adam",
+    help="optimizer name",
 )
 
 # data
@@ -77,23 +84,6 @@ parser.add_argument(
     help="pretrained path for model and optimizer",
 )
 
-parser.add_argument(
-    "--on_kaggle",
-    type=bool,
-    dest="on_kaggle",
-    help="running on kaggle",
-)
-
-
-# eval
-parser.add_argument(
-    "--eval_epochs",
-    type=int,
-    dest="eval_epochs",
-    default=1,
-    help="evaluate at this number of epochs",
-)
-
 
 args = parser.parse_args()
 
@@ -103,23 +93,32 @@ def train(
     batch_size=BATCH_SIZE,
     learning_rate=LEARNING_RATE,
     save_epochs=1,
-    eval_epochs=1,
     save_base_folder="trained/",
     max_samples=None,
     augment=True,
     pretrained_path=None,
+    optimizer_name="Adam",
 ):
     for name, arg in [
         ["epochs", epochs],
         ["batch_size", batch_size],
         ["learning_rate", learning_rate],
         ["save_epochs", save_epochs],
-        ["eval_epochs", eval_epochs],
         ["save_base_folder", save_base_folder],
+        ["augment", augment],
         ["max_samples", max_samples],
         ["pretrained_path", pretrained_path],
+        ["optimizer_name", optimizer_name],
     ]:
         print(name, arg)
+
+    save_base_folder = f"{save_base_folder}{get_run_name(
+        epochs=epochs,
+        optimizer_name=optimizer_name,
+        batch_size=batch_size,
+        learning_rate=learning_rate,
+        augment=augment
+    )}/"
 
     model = DetectionModel()
     train_set = PneumoniaDetectionDataset(
@@ -148,7 +147,8 @@ def train(
 
     model.to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer_class = getattr(torch.optim, optimizer_name)
+    optimizer = optimizer_class(model.parameters(), lr=learning_rate)
     start_epoch = 0
 
     if pretrained_path:
@@ -180,7 +180,6 @@ def train(
 
     def log_metric(metric, value, epoch):
         metrics[metric].append([epoch, value])
-        mlflow.log_metric(metric, value, step=epoch)
 
     try:
         with open(metrics_path, "r") as file:
@@ -199,104 +198,103 @@ def train(
 
         model.train()
 
-        with mlflow.start_run():
-            mlflow.log_param("epochs", epochs)
-            mlflow.log_param("batch_size", batch_size)
-            mlflow.log_param("lr", learning_rate)
-            mlflow.log_param("model", "resnet50")
-            mlflow.log_param("augment", augment)
-            for step, (data, labels, _) in enumerate(train_loader):
+        for step, (data, labels, _) in enumerate(train_loader):
 
-                data = data.to(device)
-                labels = labels.to(device)
+            data = data.to(device)
+            labels = labels.to(device)
 
-                optimizer.zero_grad()
+            optimizer.zero_grad()
 
-                logits = model.forward(data)
-                loss = loss_fn(logits, labels)
+            logits = model.forward(data)
+            loss = loss_fn(logits, labels)
 
-                loss.backward()
-                optimizer.step()
+            loss.backward()
+            optimizer.step()
 
-                progress_bar.update(1)
+            progress_bar.update(1)
 
-                train_loss += loss.item() / train_num_batches
-                pred_labels = torch.argmax(logits, dim=1)
-                train_accuracy_metric.update(pred_labels, labels)
+            train_loss += loss.item() / train_num_batches
+            pred_labels = torch.argmax(logits, dim=1)
+            train_accuracy_metric.update(pred_labels, labels)
 
-                del data, labels
+            del data, labels
 
-            log_metric("train_loss", train_loss, epoch)
-            log_metric("train_accuracy", train_accuracy_metric.compute().item(), epoch)
+        log_metric("train_loss", train_loss, epoch)
+        log_metric("train_accuracy", train_accuracy_metric.compute().item(), epoch)
 
-            if (epoch + 1) % save_epochs == 0:
+        if (epoch + 1) % save_epochs == 0:
 
-                eval_loss = 0
-                accuracy_metric = MulticlassAccuracy(num_classes=2, average="micro")
-                precision_metric = MulticlassPrecision(num_classes=2, average=None)
-                recall_metric = MulticlassRecall(num_classes=2, average=None)
-                f1_metric = MulticlassF1Score(num_classes=2, average=None)
-                model.eval()
-                with torch.no_grad():
-                    for step, (data, labels, _) in enumerate(eval_loader):
+            eval_loss = 0
+            accuracy_metric = MulticlassAccuracy(num_classes=2, average="micro")
+            precision_metric = MulticlassPrecision(num_classes=2, average=None)
+            recall_metric = MulticlassRecall(num_classes=2, average=None)
+            f1_metric = MulticlassF1Score(num_classes=2, average=None)
+            model.eval()
+            with torch.no_grad():
+                for step, (data, labels, _) in enumerate(eval_loader):
 
-                        data = data.to(device)
-                        labels = labels.to(device)
+                    data = data.to(device)
+                    labels = labels.to(device)
 
-                        logits = model.forward(data)
-                        loss = loss_fn(logits, labels)
+                    logits = model.forward(data)
+                    loss = loss_fn(logits, labels)
 
-                        eval_loss += loss.item() / eval_num_batches
+                    eval_loss += loss.item() / eval_num_batches
 
-                        pred_labels = torch.argmax(logits, dim=1)
+                    pred_labels = torch.argmax(logits, dim=1)
 
-                        # print("---")
-                        # print(logits)
-                        # print("pred_labels", list(pred_labels.numpy()))
-                        # print("labels", list(labels.numpy()))
+                    # print("---")
+                    # print(logits)
+                    # print("pred_labels", list(pred_labels.numpy()))
+                    # print("labels", list(labels.numpy()))
 
-                        accuracy_metric.update(pred_labels, labels)
-                        precision_metric.update(pred_labels, labels)
-                        recall_metric.update(pred_labels, labels)
-                        f1_metric.update(pred_labels, labels)
+                    accuracy_metric.update(pred_labels, labels)
+                    precision_metric.update(pred_labels, labels)
+                    recall_metric.update(pred_labels, labels)
+                    f1_metric.update(pred_labels, labels)
 
-                        del data, labels
+                    del data, labels
 
-                log_metric("eval_loss", eval_loss, epoch)
-                log_metric("eval_accuracy", accuracy_metric.compute().item(), epoch)
-                log_metric(
-                    "eval_precision", precision_metric.compute()[0].item(), epoch
-                )
-                log_metric("eval_recall", recall_metric.compute()[0].item(), epoch)
+            log_metric("eval_loss", eval_loss, epoch)
+            log_metric("eval_accuracy", accuracy_metric.compute().item(), epoch)
+            log_metric("eval_precision", precision_metric.compute()[0].item(), epoch)
+            log_metric("eval_recall", recall_metric.compute()[0].item(), epoch)
 
-                os.makedirs(os.path.dirname(save_base_folder), exist_ok=True)
+            os.makedirs(os.path.dirname(save_base_folder), exist_ok=True)
 
-                with open(f"{save_base_folder}metrics.json", "w") as f:
-                    json.dump(metrics, f)
+            with open(f"{save_base_folder}metrics.json", "w") as f:
+                json.dump(metrics, f)
 
-                if (
-                    not metrics["best_eval_loss"]
-                    or metrics["best_eval_loss"][1] > eval_loss
-                ):
-                    if metrics["best_eval_loss"]:
-                        prev_epoch = metrics["best_eval_loss"][0]
-                        prev_best_path = f"{save_base_folder}epoch_{prev_epoch}"
-                        if os.path.exists(prev_best_path):
-                            shutil.rmtree(prev_best_path)
+            if (
+                not metrics["best_eval_loss"]
+                or metrics["best_eval_loss"][1] > eval_loss
+            ):
+                if metrics["best_eval_loss"]:
+                    prev_epoch = metrics["best_eval_loss"][0]
+                    prev_best_path = f"{save_base_folder}epoch_{prev_epoch}"
+                    if os.path.exists(prev_best_path):
+                        shutil.rmtree(prev_best_path)
 
-                    metrics["best_eval_loss"] = [epoch, eval_loss]
+                metrics["best_eval_loss"] = [epoch, eval_loss]
 
-                    curr_best_path = f"{save_base_folder}epoch_{epoch}/"
-                    os.makedirs(os.path.dirname(curr_best_path), exist_ok=True)
+                curr_best_path = f"{save_base_folder}epoch_{epoch}/"
+                os.makedirs(os.path.dirname(curr_best_path), exist_ok=True)
 
-                    torch.save(model, f"{curr_best_path}/model.pth")
-                    checkpoint = {
-                        "epoch": epoch,
-                        "optimizer": optimizer.state_dict(),
-                    }
-                    torch.save(checkpoint, f"{curr_best_path}/checkpoint.pth")
+                torch.save(model, f"{curr_best_path}/model.pth")
+                checkpoint = {
+                    "epoch": epoch,
+                    "optimizer": optimizer.state_dict(),
+                }
+                torch.save(checkpoint, f"{curr_best_path}/checkpoint.pth")
 
     print("\nEnd training\n")
+
+    best_epoch = metrics["best_eval_loss"][0]
+    best_model = torch.load(
+        f"{save_base_folder}epoch_{best_epoch}/model.pth", weights_only=False
+    )
+
+    return best_model, metrics
 
 
 train(
@@ -304,9 +302,9 @@ train(
     batch_size=args.batch_size,
     learning_rate=args.learning_rate,
     save_epochs=args.save_epochs,
-    eval_epochs=args.eval_epochs,
     save_base_folder=args.save_base_folder,
     augment=args.augment,
     max_samples=args.max_samples,
     pretrained_path=args.pretrained_path,
+    optimizer_name=args.optimizer_name,
 )
