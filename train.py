@@ -112,13 +112,14 @@ def train(
     ]:
         print(name, arg)
 
-    save_base_folder = f"{save_base_folder}{get_run_name(
+    run_name = get_run_name(
         epochs=epochs,
         optimizer_name=optimizer_name,
         batch_size=batch_size,
         learning_rate=learning_rate,
-        augment=augment
-    )}/"
+        augment=augment,
+    )
+    save_base_folder = f"{save_base_folder}{run_name}/"
 
     model = DetectionModel()
     train_set = PneumoniaDetectionDataset(
@@ -297,14 +298,15 @@ def train(
     return best_model, metrics
 
 
-train(
-    epochs=args.epochs,
-    batch_size=args.batch_size,
-    learning_rate=args.learning_rate,
-    save_epochs=args.save_epochs,
-    save_base_folder=args.save_base_folder,
-    augment=args.augment,
-    max_samples=args.max_samples,
-    pretrained_path=args.pretrained_path,
-    optimizer_name=args.optimizer_name,
-)
+if __name__ == "__main__":
+    train(
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
+        save_epochs=args.save_epochs,
+        save_base_folder=args.save_base_folder,
+        augment=args.augment,
+        max_samples=args.max_samples,
+        pretrained_path=args.pretrained_path,
+        optimizer_name=args.optimizer_name,
+    )

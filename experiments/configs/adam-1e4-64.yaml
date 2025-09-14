@@ -1,6 +1,6 @@
 batch_size: 64
-epochs: 10
-learning_rate: 1e-4
+epochs: 3
+learning_rate: 0.0001
 optimizer_name: Adam
-augment: true
+augment: True
 max_samples: 8

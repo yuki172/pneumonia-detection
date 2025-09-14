@@ -2,11 +2,11 @@ import argparse
 import yaml
 import mlflow
 from mlflow.pytorch import log_model
-from ..train import train
-from ..utils import get_run_name
+from train import train
+from utils import get_run_name
 
 
-def run(config_path):
+def run_experiment(config_path):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
@@ -18,7 +18,7 @@ def run(config_path):
 
         best_model, metrics = train(**config)
 
-        for epoch in range(config.epochs):
+        for epoch in range(config["epochs"]):
             for key, metric in metrics.items():
                 if key != "best_eval_loss":
                     mlflow.log_metric(key, metric[epoch], step=epoch)
@@ -29,7 +29,7 @@ def run(config_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_path", type=str, required=True)
+    parser.add_argument("--config_path", type=str)
     args = parser.parse_args()
-
-    run(args.config_path)
+    if args.config_path:
+        run_experiment(args.config_path)
