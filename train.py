@@ -260,6 +260,7 @@ def train(
             log_metric("eval_accuracy", accuracy_metric.compute().item(), epoch)
             log_metric("eval_precision", precision_metric.compute()[0].item(), epoch)
             log_metric("eval_recall", recall_metric.compute()[0].item(), epoch)
+            log_metric("eval_f1", f1_metric.compute()[0].item(), epoch)
 
             os.makedirs(os.path.dirname(save_base_folder), exist_ok=True)
 

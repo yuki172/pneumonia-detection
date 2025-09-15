@@ -4,6 +4,7 @@ import mlflow
 from mlflow.pytorch import log_model
 from train import train
 from utils import get_run_name
+import numpy as np
 
 
 def run_experiment(config_path):
@@ -21,10 +22,13 @@ def run_experiment(config_path):
         for epoch in range(config["epochs"]):
             for key, metric in metrics.items():
                 if key != "best_eval_loss":
-                    mlflow.log_metric(key, metric[epoch], step=epoch)
+                    mlflow.log_metric(key, metric[epoch][1], step=epoch)
 
         # log model
-        log_model(best_model, "model")
+        input_example = np.random.default_rng().random(
+            [1, 3, 224, 224], dtype="float32"
+        )
+        log_model(best_model, "model", input_example=input_example)
 
 
 if __name__ == "__main__":
