@@ -16,3 +16,8 @@ BATCH_SIZE = 64
 LEARNING_RATE = 1e-4
 
 NUM_CLASSES = 2
+
+TRUE_POSITIVE = "true-positive-pneumonia"
+TRUE_NEGATIVE = "true-negative-pneumonia"
+FALSE_POSITIVE = "false-positive"
+FALSE_NEGATIVE = "false-negative"

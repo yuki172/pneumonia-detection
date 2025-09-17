@@ -39,10 +39,10 @@ class DetectionModel(nn.Module):
         )
 
     def train(self):
-        self.model.train()
+        return self.model.train()
 
     def eval(self):
-        self.model.eval()
+        return self.model.eval()
 
     def forward(self, x):
         return self.model(x)
