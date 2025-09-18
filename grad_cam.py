@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import os
 import time
+from utils import get_pred_type
 
 
 def save_grad_cam(model, image, label, save_dir):
@@ -17,18 +18,8 @@ def save_grad_cam(model, image, label, save_dir):
         )
         outputs = cam.outputs
 
-        pred = torch.argmax(outputs, dim=1)[0]
-        title = ""
-        if pred == label:
-            if label == 0:
-                title = "Correct-Pneumonia"
-            else:
-                title = "Correct-Normal"
-        else:
-            if label == 0:
-                title = "Incorrect-False-Negative"
-            else:
-                title = "Incorrect-False-Positive"
+        pred_label = torch.argmax(outputs, dim=1)[0].item()
+        title = get_pred_type(label, pred_label)
 
         file_name = f"{title}-{time.time()}"
         # Plot

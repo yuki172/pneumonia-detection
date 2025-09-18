@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument(
     "--model_path",
-    type=int,
+    type=str,
     dest="model_path",
     help="model path",
 )
@@ -38,20 +38,33 @@ parser.add_argument(
     dest="max_samples",
     help="max samples",
 )
+parser.add_argument(
+    "--enable_grad_cam",
+    type=bool,
+    dest="enable_grad_cam",
+    help="enable grad cam",
+)
 
 
 parser.add_argument(
     "--save_folder",
-    type=int,
-    dest="save_path",
+    type=str,
+    dest="save_folder",
     help="save path",
 )
+
+args = parser.parse_args()
 
 GRAD_CAM_COUNT = 4
 
 
-def test(model_path, save_folder, batch_size, max_samples):
-    for name, arg in [["save_folder", save_folder], ["model_path", model_path]]:
+def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
+    for name, arg in [
+        ["save_folder", save_folder],
+        ["model_path", model_path],
+        ["batch_size", batch_size],
+        ["max_samples", max_samples],
+    ]:
         print(name, arg)
 
     model = torch.load(model_path, weights_only=False)
@@ -88,10 +101,15 @@ def test(model_path, save_folder, batch_size, max_samples):
     precision_metric = MulticlassPrecision(num_classes=2, average=None)
     recall_metric = MulticlassRecall(num_classes=2, average=None)
     f1_metric = MulticlassF1Score(num_classes=2, average=None)
-    model.eval()
-    with torch.no_grad():
-        for step, (data, labels, _) in enumerate(test_loader):
 
+    model.eval()
+
+    def test_batches():
+        nonlocal met_count
+
+        print("has grad", torch.is_grad_enabled())
+
+        for step, (data, labels, _) in enumerate(test_loader):
             data = data.to(device)
             labels = labels.to(device)
 
@@ -104,23 +122,33 @@ def test(model_path, save_folder, batch_size, max_samples):
             recall_metric.update(pred_labels, labels)
             f1_metric.update(pred_labels, labels)
 
-            if met_count < len(grad_cam):
+            if enable_grad_cam and met_count < len(grad_cam):
                 for i, (label, pred_label) in enumerate(zip(labels, pred_labels)):
-                    pred_type = get_pred_type(label.item(), pred_label.item())
+                    label = label.item()
+                    pred_label = pred_label.item()
+                    pred_type = get_pred_type(label, pred_label)
                     if len(grad_cam[pred_type]) < GRAD_CAM_COUNT:
                         grad_cam[pred_type].append([data[i], label])
                         if grad_cam[pred_type] == GRAD_CAM_COUNT:
                             met_count += 1
 
             del data, labels
+
+    if not enable_grad_cam:
+        with torch.no_grad():
+            test_batches()
+    else:
+        for param in model.parameters():
+            param.requires_grad = True
+        test_batches()
+
     metrics["accuracy"] = accuracy_metric.compute().item()
     metrics["precision"] = precision_metric.compute()[0].item()
     metrics["recall"] = recall_metric.compute()[0].item()
     metrics["f1"] = f1_metric.compute()[0].item()
 
-    metrics_path = os.path.join(save_folder, "metrics")
-    os.makedirs(os.path.dirname(metrics_path), exist_ok=True)
-    with open(metrics_path) as f:
+    os.makedirs(save_folder, exist_ok=True)
+    with open(os.path.join(save_folder, "metrics.json"), "w") as f:
         json.dump(metrics, f)
 
     for pred_type, data in grad_cam.items():
@@ -133,3 +161,12 @@ def test(model_path, save_folder, batch_size, max_samples):
                 label,
                 save_dir=pred_type_path,
             )
+
+
+test(
+    model_path=args.model_path,
+    save_folder=args.save_folder,
+    batch_size=args.batch_size,
+    max_samples=args.max_samples,
+    enable_grad_cam=args.enable_grad_cam,
+)
