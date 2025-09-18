@@ -17,6 +17,7 @@ from torcheval.metrics import (
 from utils import *
 from grad_cam import save_grad_cam
 from typing import Dict
+import numpy as np
 
 parser = argparse.ArgumentParser()
 
@@ -107,9 +108,7 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
     def test_batches():
         nonlocal met_count
 
-        print("has grad", torch.is_grad_enabled())
-
-        for step, (data, labels, _) in enumerate(test_loader):
+        for step, (data, labels, original_images) in enumerate(test_loader):
             data = data.to(device)
             labels = labels.to(device)
 
@@ -128,7 +127,7 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
                     pred_label = pred_label.item()
                     pred_type = get_pred_type(label, pred_label)
                     if len(grad_cam[pred_type]) < GRAD_CAM_COUNT:
-                        grad_cam[pred_type].append([data[i], label])
+                        grad_cam[pred_type].append([data[i], label, original_images[i]])
                         if grad_cam[pred_type] == GRAD_CAM_COUNT:
                             met_count += 1
 
@@ -153,12 +152,12 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
 
     for pred_type, data in grad_cam.items():
         pred_type_path = os.path.join(save_folder, "gram-cam", pred_type)
-        for image_label in data:
-            image, label = image_label
+        for image, label, original_image in data:
             save_grad_cam(
                 model,
                 image,
                 label,
+                original_image,
                 save_dir=pred_type_path,
             )
 
