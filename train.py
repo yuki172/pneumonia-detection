@@ -51,7 +51,8 @@ parser.add_argument(
 # data
 parser.add_argument(
     "--augment",
-    type=int,
+    default=True,
+    type=bool,
     dest="augment",
     help="augment dataset",
 )
@@ -146,8 +147,6 @@ def train(
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("device", device)
 
-    model.to(device)
-
     optimizer_class = getattr(torch.optim, optimizer_name)
     optimizer = optimizer_class(model.parameters(), lr=learning_rate)
     start_epoch = 0
@@ -159,6 +158,8 @@ def train(
         start_epoch = checkpoint["epoch"] + 1
         optimizer.load_state_dict(checkpoint["optimizer"])
         model = torch.load(f"{pretrained_path}model.pth", weights_only=False)
+
+    model.to(device)
 
     train_num_batches = len(train_loader)
     eval_num_batches = len(eval_loader)
@@ -206,7 +207,7 @@ def train(
 
             optimizer.zero_grad()
 
-            logits = model.forward(data)
+            logits = model(data)
             loss = loss_fn(logits, labels)
 
             loss.backward()
@@ -219,6 +220,7 @@ def train(
             train_accuracy_metric.update(pred_labels, labels)
 
             del data, labels
+            torch.cuda.empty_cache()
 
         log_metric("train_loss", train_loss, epoch)
         log_metric("train_accuracy", train_accuracy_metric.compute().item(), epoch)
@@ -237,7 +239,7 @@ def train(
                     data = data.to(device)
                     labels = labels.to(device)
 
-                    logits = model.forward(data)
+                    logits = model(data)
                     loss = loss_fn(logits, labels)
 
                     eval_loss += loss.item() / eval_num_batches
@@ -255,6 +257,7 @@ def train(
                     f1_metric.update(pred_labels, labels)
 
                     del data, labels
+                    torch.cuda.empty_cache()
 
             log_metric("eval_loss", eval_loss, epoch)
             log_metric("eval_accuracy", accuracy_metric.compute().item(), epoch)

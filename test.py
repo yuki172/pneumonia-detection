@@ -112,7 +112,7 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
             data = data.to(device)
             labels = labels.to(device)
 
-            logits = model.forward(data)
+            logits = model(data)
 
             pred_labels = torch.argmax(logits, dim=1)
 
@@ -132,6 +132,7 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
                             met_count += 1
 
             del data, labels
+            torch.cuda.empty_cache()
 
     if not enable_grad_cam:
         with torch.no_grad():

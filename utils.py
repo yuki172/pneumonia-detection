@@ -48,7 +48,7 @@ def get_augmented_image(
 
 
 def get_run_name(epochs, optimizer_name, learning_rate, batch_size, augment, **kwargs):
-    return f"{optimizer_name.lower()}-{learning_rate}-{batch_size}-{epochs}-{'augment' if augment else ''}"
+    return f"{optimizer_name.lower()}-{learning_rate}-{batch_size}-{epochs}-{'augment' if augment else 'no-augment'}"
 
 
 def get_pred_type(label, pred_label):
