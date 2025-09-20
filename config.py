@@ -17,6 +17,8 @@ LEARNING_RATE = 1e-4
 
 NUM_CLASSES = 2
 
+CLASSES = {0: "Pneumonia", 1: "Normal"}
+
 TRUE_POSITIVE = "true-positive-pneumonia"
 TRUE_NEGATIVE = "true-negative-pneumonia"
 FALSE_POSITIVE = "false-positive"

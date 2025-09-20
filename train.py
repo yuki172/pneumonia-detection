@@ -176,7 +176,9 @@ def train(
         )
         start_epoch = checkpoint["epoch"] + 1
         optimizer.load_state_dict(checkpoint["optimizer"])
-        model = torch.load(f"{pretrained_path}model.pth", weights_only=False)
+        model = torch.load(
+            f"{pretrained_path}model.pth", weights_only=False, map_location=device
+        )
 
     model.to(device)
 
