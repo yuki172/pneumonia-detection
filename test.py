@@ -52,20 +52,30 @@ parser.add_argument(
     dest="save_folder",
     help="save path",
 )
+parser.add_argument(
+    "--model_name",
+    type=str,
+    dest="model_name",
+    help="model name",
+)
 
 args = parser.parse_args()
 
 GRAD_CAM_COUNT = 4
 
 
-def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
+def test(model_path, model_name, save_folder, batch_size, max_samples, enable_grad_cam):
     for name, arg in [
         ["save_folder", save_folder],
         ["model_path", model_path],
         ["batch_size", batch_size],
         ["max_samples", max_samples],
+        ["enable_grad_cam", enable_grad_cam],
+        ["model_name", model_name],
     ]:
         print(name, arg)
+
+    save_folder = os.path.join(save_folder, model_name)
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("device", device)
@@ -157,6 +167,7 @@ def test(model_path, save_folder, batch_size, max_samples, enable_grad_cam):
 
 test(
     model_path=args.model_path,
+    model_name=args.model_name,
     save_folder=args.save_folder,
     batch_size=args.batch_size,
     max_samples=args.max_samples,
