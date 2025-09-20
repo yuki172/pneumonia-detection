@@ -47,8 +47,39 @@ def get_augmented_image(
     return image
 
 
-def get_run_name(epochs, optimizer_name, learning_rate, batch_size, augment, **kwargs):
-    return f"{optimizer_name.lower()}-{learning_rate}-{batch_size}-{epochs}-{'augment' if augment else 'no-augment'}"
+def get_run_name(
+    model_name, epochs, optimizer_name, learning_rate, batch_size, augment, **kwargs
+):
+    return f"{model_name}-{optimizer_name.lower()}-{learning_rate}-{batch_size}-{epochs}-{'augment' if augment else 'no-augment'}"
+
+
+import os
+import shutil
+import random
+
+
+def create_val_split(val_count=350, seed=42):
+    random.seed(seed)
+
+    train_base = os.path.join(DATA_PATH, "train")
+    val_base = os.path.join(DATA_PATH, "val")
+
+    classes = ["0_PNEUMONIA", "1_NORMAL"]
+
+    for class_name in classes:
+        train_data_dir = os.path.join(train_base, class_name)
+        val_data_dir = os.path.join(val_base, class_name)
+
+        os.makedirs(val_data_dir, exist_ok=True)
+
+        images = os.listdir(train_data_dir)
+
+        val_images = random.sample(images, val_count)
+
+        for img in val_images:
+            src = os.path.join(train_data_dir, img)
+            dst = os.path.join(val_data_dir, img)
+            shutil.move(src, dst)
 
 
 def get_pred_type(label, pred_label):

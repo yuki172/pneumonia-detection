@@ -1,7 +1,7 @@
 import torch
 from torch import nn
-from .base_layer import BaseLayer
 from config import *
+from torchvision.models import resnet50, ResNet50_Weights
 
 
 class Reshape(nn.Module):
@@ -13,11 +13,35 @@ class Reshape(nn.Module):
         return torch.reshape(x, (-1, *self.shape))
 
 
-class DetectionModel(nn.Module):
+class ResNet50BaseLayer(nn.Module):
     def __init__(self):
         super().__init__()
+
+        model = resnet50(weights=ResNet50_Weights.DEFAULT)
+        model.requires_grad_(False)
+
+        # take the output of layer4 in https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+        model.avgpool = nn.Identity()  # type: ignore
+        model.fc = nn.Identity()  # type: ignore
+
+        self.model = model
+
+    def forward(self, x):
+        return self.model.forward(x)
+
+
+class Resnet50Model1(nn.Module):
+    def __init__(self):
+        super().__init__()
+        model = resnet50(weights=ResNet50_Weights.DEFAULT)
+        model.requires_grad_(False)
+
+        # take the output of layer4 in https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+        model.avgpool = nn.Identity()  # type: ignore
+        model.fc = nn.Identity()  # type: ignore
+
         self.model = nn.Sequential(
-            BaseLayer(),
+            ResNet50BaseLayer(),
             # with input of shape (224, 224), layer4 of ResNet returns output of shape (2048, 7, 7). The final output flattens it
             # we bring the shape back and add conv layer on top of it
             Reshape((2048, 7, 7)),

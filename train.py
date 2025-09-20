@@ -1,6 +1,7 @@
 import argparse
 import torch
-from model.DetectionModel import DetectionModel
+from model.Resnet50Model2 import Resnet50Model2
+from model.Resnet50Model1 import Resnet50Model1
 from dataset import PneumoniaDetectionDataset
 from tqdm import tqdm
 import os
@@ -47,6 +48,14 @@ parser.add_argument(
     default="Adam",
     help="optimizer name",
 )
+parser.add_argument(
+    "--model_name",
+    type=str,
+    dest="model_name",
+    default="Resnet50Model2",
+    help="model name",
+)
+
 
 # data
 parser.add_argument(
@@ -99,9 +108,11 @@ def train(
     augment=True,
     pretrained_path=None,
     optimizer_name="Adam",
+    model_name="Resnet50Model2",
 ):
     for name, arg in [
         ["epochs", epochs],
+        ["model_name", model_name],
         ["batch_size", batch_size],
         ["learning_rate", learning_rate],
         ["save_epochs", save_epochs],
@@ -114,6 +125,7 @@ def train(
         print(name, arg)
 
     run_name = get_run_name(
+        model_name=model_name,
         epochs=epochs,
         optimizer_name=optimizer_name,
         batch_size=batch_size,
@@ -122,7 +134,13 @@ def train(
     )
     save_base_folder = f"{save_base_folder}{run_name}/"
 
-    model = DetectionModel()
+    ModelClass = None
+    if model_name == "Resnet50Model1":
+        ModelClass = Resnet50Model1
+    else:
+        ModelClass = Resnet50Model2
+
+    model = ModelClass()
     train_set = PneumoniaDetectionDataset(
         split="train", augment=augment, normalize=True
     )
@@ -148,7 +166,8 @@ def train(
     print("device", device)
 
     optimizer_class = getattr(torch.optim, optimizer_name)
-    optimizer = optimizer_class(model.parameters(), lr=learning_rate)
+    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = optimizer_class(trainable_params, lr=learning_rate)
     start_epoch = 0
 
     if pretrained_path:
@@ -313,4 +332,5 @@ if __name__ == "__main__":
         max_samples=args.max_samples,
         pretrained_path=args.pretrained_path,
         optimizer_name=args.optimizer_name,
+        model_name="Resnet50Model2",
     )

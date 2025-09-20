@@ -11,7 +11,7 @@ import numpy as np
 
 def save_grad_cam(model, input_image, label, original_image, save_dir):
 
-    with GradCAM(model=model, target_layers=[model.model[0].model.layer4[-1]]) as cam:
+    with GradCAM(model=model, target_layers=[model.model.layer4[-1]]) as cam:
         grayscale_cam = cam(input_tensor=input_image.unsqueeze(0), targets=[ClassifierOutputTarget(0)])  # type: ignore
         grayscale_cam = grayscale_cam[0, :]
         visualization = show_cam_on_image(

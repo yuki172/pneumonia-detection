@@ -24,11 +24,11 @@ def run_experiment(config_path):
                 if key != "best_eval_loss":
                     mlflow.log_metric(key, metric[epoch][1], step=epoch)
 
-        # log model
-        input_example = np.random.default_rng().random(
-            [1, 3, 224, 224], dtype="float32"
-        )
-        log_model(best_model, "model", input_example=input_example)
+        # # log model
+        # input_example = np.random.default_rng().random(
+        #     [1, 3, 224, 224], dtype="float32"
+        # )
+        # log_model(best_model, "model", input_example=input_example)
 
 
 if __name__ == "__main__":

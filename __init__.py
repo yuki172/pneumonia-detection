@@ -1,1 +1,1 @@
-from model.DetectionModel import DetectionModel
+from model.Resnet50Model2 import Resnet50Model2
