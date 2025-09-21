@@ -4,6 +4,8 @@ from torchvision import models
 from PIL import Image
 import torchvision.transforms.functional as TF
 from grad_cam import compute_grad_cam
+from typing import Tuple
+import numpy as np
 
 
 class PneumoniaModel:
@@ -24,8 +26,7 @@ class PneumoniaModel:
             ]
         )
 
-    def predict(self, image_path):
-        image = Image.open(image_path).convert("RGB")
+    def predict(self, image: Image.Image) -> Tuple[np.ndarray, int, np.ndarray]:
         original_image = self.transform(image)
         input_image = TF.normalize(
             original_image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]  # type: ignore
@@ -34,4 +35,6 @@ class PneumoniaModel:
             self.model, input_image, original_image
         )
 
-        return visualization, pred_label, original_image
+        np_original_image = original_image.permute(1, 2, 0).numpy()  # type: ignore
+
+        return visualization, pred_label, np_original_image  # type: ignore

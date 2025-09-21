@@ -24,13 +24,32 @@ def compute_grad_cam(model, input_image, original_image):
         return visualization, pred_label
 
 
+def save_grad_cam_figs(visualization, original_image, save_dir):
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    time_suffix = time.time()
+
+    fig = plt.figure(figsize=(3.5, 3.5))
+    plt.imshow(original_image.permute(1, 2, 0))
+    plt.axis("off")
+    plt.savefig(f"{save_dir}/original-image-{time_suffix}.png", transparent=True)
+
+    plt.imshow(visualization)
+    plt.axis("off")
+    plt.savefig(f"{save_dir}/gram-cam-{time_suffix}.png", transparent=True)
+
+    plt.close(fig)
+
+
 def save_grad_cam(model, input_image, label, original_image, save_dir):
 
     visualization, pred_label = compute_grad_cam(model, input_image, original_image)
+
     title = get_pred_type(label, pred_label)
 
     file_name = f"{title}-{time.time()}"
-    # Plot
+
     fig = plt.figure(figsize=(8, 4))
     plt.subplot(1, 2, 1)
     plt.imshow(original_image.permute(1, 2, 0))
