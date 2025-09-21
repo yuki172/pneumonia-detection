@@ -12,7 +12,7 @@ import base64
 import numpy as np
 
 
-model_path = "trained/Resnet50Model2-adam-0.0001-64-20-augment/epoch_19/model.pth"
+model_path = "best_model/model.pth"
 app = FastAPI(title="Pneumonia Detection API")
 model = PneumoniaModel(model_path=model_path)
 
