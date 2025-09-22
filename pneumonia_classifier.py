@@ -8,7 +8,7 @@ from typing import Tuple
 import numpy as np
 
 
-class PneumoniaModel:
+class PenumoniaClassifier:
     def __init__(self, model_path, device="cpu"):
         self.device = device
         self.model = torch.load(model_path, weights_only=False, map_location=device)

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 import uvicorn
 import shutil
-from pneumonia_model import PneumoniaModel
+from pneumonia_classifier import PenumoniaClassifier
 from config import *
 import os
 import time
@@ -14,7 +14,7 @@ import numpy as np
 
 model_path = "best_model/model.pth"
 app = FastAPI(title="Pneumonia Detection API")
-model = PneumoniaModel(model_path=model_path)
+model = PenumoniaClassifier(model_path=model_path)
 
 
 def numpy_to_base64(img_array: np.ndarray) -> str:
