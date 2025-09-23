@@ -2,6 +2,7 @@ import argparse
 import torch
 from model.Resnet50Model2 import Resnet50Model2
 from model.Resnet50Model1 import Resnet50Model1
+from model.CNNModel import CNNModel
 from dataset import PneumoniaDetectionDataset
 from tqdm import tqdm
 import os
@@ -137,8 +138,10 @@ def train(
     ModelClass = None
     if model_name == "Resnet50Model1":
         ModelClass = Resnet50Model1
-    else:
+    elif model_name == "Resnet50Model2":
         ModelClass = Resnet50Model2
+    else:
+        ModelClass = CNNModel
 
     model = ModelClass()
     train_set = PneumoniaDetectionDataset(
