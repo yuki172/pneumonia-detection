@@ -4,3 +4,4 @@ __pycache__/
 /mlruns/
 /trained/
 /best_model/
+.DS_Store

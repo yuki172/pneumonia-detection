@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Install dependencies
@@ -16,6 +17,8 @@ COPY best_model/model.pth ./best_model/
 COPY pneumonia_classifier.py ./
 COPY grad_cam.py ./
 COPY model/ ./model/
+COPY utils.py ./
+COPY config.py ./
 
 RUN echo "Recursive contents of /app:" && find .
 
