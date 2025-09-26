@@ -4,6 +4,8 @@ This repo explores the problem of classifiying chest X-ray scans to one of two c
 
 See a demo on on [Hugging Face Spaces](https://huggingface.co/spaces)
 
+![true-positive-example](images/true-positive-pneumonia.png)
+
 ---
 
 ## Main Features
