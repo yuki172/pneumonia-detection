@@ -1,6 +1,6 @@
 # Pneumonia Detection with Grad-Cam Heatmaps for Explainability
 
-This repo explores the problem of classifiying chest X-ray scans to one of two classes pneumonia/normal. The dataset used is [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
+This repo explores the problem of classifiying chest X-ray scans to one of two classes pneumonia/normal. The dataset used is [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia). The best result is obtained using transfer learning with a custom classification head on `resnet50`.
 
 See a demo on on [Hugging Face Spaces](https://huggingface.co/spaces/yzhng172/pneumonia-detection-with-grad-cam)
 
@@ -17,6 +17,19 @@ See a demo on on [Hugging Face Spaces](https://huggingface.co/spaces/yzhng172/pn
 - **Deployed demo** on [Hugging Face Spaces](https://huggingface.co/spaces)
 
 ---
+
+## Best Result
+
+The best result is obtained using transfer learning with a custom classification head on `resnet50`. [See model architecture](model/Resnet50Model2.py).
+
+```
+{
+  "accuracy": 0.90,
+  "precision": 0.89,
+  "recall": 0.96,
+  "f1": 0.92
+}
+```
 
 ## Usage
 
