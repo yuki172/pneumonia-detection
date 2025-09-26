@@ -1,4 +1,4 @@
-# Pneumonia Detection with Gram-Cam Explainability
+# Pneumonia Detection with Grad-Cam Heatmaps for Explainability
 
 This repo explores the problem of classifiying chest X-ray scans to one of two classes pneumonia/normal. The dataset used is [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
 
