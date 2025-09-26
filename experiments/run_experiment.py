@@ -31,8 +31,9 @@ def run_experiment(config_path):
         # log_model(best_model, "model", input_example=input_example)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--config_path", type=str)
-args = parser.parse_args()
-if args.config_path:
-    run_experiment(args.config_path)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config_path", type=str)
+    args = parser.parse_args()
+    if args.config_path:
+        run_experiment(args.config_path)

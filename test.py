@@ -18,49 +18,6 @@ from grad_cam import save_grad_cam
 from typing import Dict
 import numpy as np
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument(
-    "--model_path",
-    type=str,
-    dest="model_path",
-    help="model path",
-)
-parser.add_argument(
-    "--batch_size",
-    type=int,
-    dest="batch_size",
-    help="batch size",
-)
-parser.add_argument(
-    "--max_samples",
-    type=int,
-    dest="max_samples",
-    help="max samples",
-)
-parser.add_argument(
-    "--enable_grad_cam",
-    type=bool,
-    dest="enable_grad_cam",
-    help="enable grad cam",
-)
-
-
-parser.add_argument(
-    "--save_folder",
-    type=str,
-    dest="save_folder",
-    help="save path",
-)
-parser.add_argument(
-    "--model_name",
-    type=str,
-    dest="model_name",
-    help="model name",
-)
-
-args = parser.parse_args()
-
 GRAD_CAM_COUNT = 4
 
 
@@ -165,11 +122,54 @@ def test(model_path, model_name, save_folder, batch_size, max_samples, enable_gr
                 )
 
 
-test(
-    model_path=args.model_path,
-    model_name=args.model_name,
-    save_folder=args.save_folder,
-    batch_size=args.batch_size,
-    max_samples=args.max_samples,
-    enable_grad_cam=args.enable_grad_cam,
-)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        dest="model_path",
+        help="model path",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        dest="batch_size",
+        help="batch size",
+    )
+    parser.add_argument(
+        "--max_samples",
+        type=int,
+        dest="max_samples",
+        help="max samples",
+    )
+    parser.add_argument(
+        "--enable_grad_cam",
+        type=bool,
+        dest="enable_grad_cam",
+        help="enable grad cam",
+    )
+
+    parser.add_argument(
+        "--save_folder",
+        type=str,
+        dest="save_folder",
+        help="save path",
+    )
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        dest="model_name",
+        help="model name",
+    )
+
+    args = parser.parse_args()
+
+    test(
+        model_path=args.model_path,
+        model_name=args.model_name,
+        save_folder=args.save_folder,
+        batch_size=args.batch_size,
+        max_samples=args.max_samples,
+        enable_grad_cam=args.enable_grad_cam,
+    )

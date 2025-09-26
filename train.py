@@ -18,86 +18,6 @@ from torcheval.metrics import (
 )
 from utils import get_run_name
 
-parser = argparse.ArgumentParser()
-
-# training
-parser.add_argument(
-    "--epochs",
-    type=int,
-    dest="epochs",
-    default=1,
-    help="number of epochs to train",
-)
-parser.add_argument(
-    "--batch_size",
-    type=int,
-    dest="batch_size",
-    default=BATCH_SIZE,
-    help="batch size",
-)
-parser.add_argument(
-    "--learning_rate",
-    type=float,
-    dest="learning_rate",
-    default=LEARNING_RATE,
-    help="learning rate",
-)
-parser.add_argument(
-    "--optimizer_name",
-    type=str,
-    dest="optimizer_name",
-    default="Adam",
-    help="optimizer name",
-)
-parser.add_argument(
-    "--model_name",
-    type=str,
-    dest="model_name",
-    default="Resnet50Model2",
-    help="model name",
-)
-
-
-# data
-parser.add_argument(
-    "--augment",
-    default=True,
-    type=bool,
-    dest="augment",
-    help="augment dataset",
-)
-parser.add_argument(
-    "--max_samples",
-    type=int,
-    dest="max_samples",
-    help="max number of samples to take in datasets",
-)
-
-# model saving
-parser.add_argument(
-    "--save_epochs",
-    type=int,
-    dest="save_epochs",
-    default=1,
-    help="save at this number of epochs ",
-)
-parser.add_argument(
-    "--save_base_folder",
-    type=str,
-    dest="save_base_folder",
-    default="trained/",
-    help="base directory for saving models params and training results",
-)
-parser.add_argument(
-    "--pretrained_path",
-    type=str,
-    dest="pretrained_path",
-    help="pretrained path for model and optimizer",
-)
-
-
-args = parser.parse_args()
-
 
 def train(
     epochs=1,
@@ -327,6 +247,85 @@ def train(
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    # training
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        dest="epochs",
+        default=1,
+        help="number of epochs to train",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        dest="batch_size",
+        default=BATCH_SIZE,
+        help="batch size",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        dest="learning_rate",
+        default=LEARNING_RATE,
+        help="learning rate",
+    )
+    parser.add_argument(
+        "--optimizer_name",
+        type=str,
+        dest="optimizer_name",
+        default="Adam",
+        help="optimizer name",
+    )
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        dest="model_name",
+        default="Resnet50Model2",
+        help="model name",
+    )
+
+    # data
+    parser.add_argument(
+        "--augment",
+        default=True,
+        type=bool,
+        dest="augment",
+        help="augment dataset",
+    )
+    parser.add_argument(
+        "--max_samples",
+        type=int,
+        dest="max_samples",
+        help="max number of samples to take in datasets",
+    )
+
+    # model saving
+    parser.add_argument(
+        "--save_epochs",
+        type=int,
+        dest="save_epochs",
+        default=1,
+        help="save at this number of epochs ",
+    )
+    parser.add_argument(
+        "--save_base_folder",
+        type=str,
+        dest="save_base_folder",
+        default="trained/",
+        help="base directory for saving models params and training results",
+    )
+    parser.add_argument(
+        "--pretrained_path",
+        type=str,
+        dest="pretrained_path",
+        help="pretrained path for model and optimizer",
+    )
+
+    args = parser.parse_args()
+
     train(
         epochs=args.epochs,
         batch_size=args.batch_size,
