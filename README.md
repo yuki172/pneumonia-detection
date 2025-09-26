@@ -2,7 +2,7 @@
 
 This repo explores the problem of classifiying chest X-ray scans to one of two classes pneumonia/normal. The dataset used is [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
 
-See a demo on on [Hugging Face Spaces](https://huggingface.co/spaces)
+See a demo on on [Hugging Face Spaces](https://huggingface.co/spaces/yzhng172/pneumonia-detection-with-grad-cam)
 
 ![true-positive-example](images/true-positive-pneumonia.png)
 
